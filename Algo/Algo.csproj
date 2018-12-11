@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{66E687A8-53D5-4C48-A687-D1C00F72F3E6}</ProjectGuid>
+    <ProjectGuid>{F576BBD1-77C6-4320-9FBF-B744BA89F314}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>Tp4_Algorithm</RootNamespace>
-    <AssemblyName>Tp4_Algorithm</AssemblyName>
+    <RootNamespace>Algo</RootNamespace>
+    <AssemblyName>Algo</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -42,10 +42,21 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AfficherDesCombinaisons.cs" />
+    <Compile Include="ConsoleMenu.cs" />
+    <Compile Include="MenuGénéral.cs" />
+    <Compile Include="MenuIO.cs" />
+    <Compile Include="MenuMotDePasse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AlgoLib\AlgoLib.csproj">
+      <Project>{0fb0935d-9bb4-400f-bf18-571928159bbb}</Project>
+      <Name>AlgoLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
