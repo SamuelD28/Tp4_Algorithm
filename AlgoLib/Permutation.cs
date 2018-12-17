@@ -129,8 +129,7 @@ namespace SDD
         /// <param name="map">Fonction à  appliquer à chaque entier entre first et last pour produire les valeurs de la séquence</param>
         /// <param name="visit">Callback appelée pour chaque combinaison qui est générée. Retourner vrai pour terminer immédiatement la génération, sinon faux.</param>
         /// <returns>Vrai si la séquence se termine prématurément</returns>        
-        public static bool ForAllCombinations<T>(
-            int first, int last, int size, Func<int, T> map, Func<T[], bool> visit)
+        public static bool ForAllCombinations<T>(int first, int last, int size, Func<int, T> map, Func<T[], bool> visit)
         {
 
             if (size <= 0)
@@ -187,7 +186,6 @@ namespace SDD
 
             return false;
         }
-
 
         /// <summary>
         /// Génère toutes les combinaisons de N valeurs prises dans l'ensemble donné. 
@@ -255,7 +253,6 @@ namespace SDD
             }
             return false;
         }
-
 
         /// <summary>
         /// Heap's algorithm to find all pmermutations. 

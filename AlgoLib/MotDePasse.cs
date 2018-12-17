@@ -108,7 +108,15 @@ namespace SDD
             Action<long, int> report = null
             )
         {
-            throw new NotImplementedException();
+
+
+			//hashstring represente le mot de passe encrypter
+			byte[] hash = HexToBytes(hashString);
+			motDePasseTrouvé = null;
+			tailleDernierEssai = 0;
+			nbEssaisEffectués = 0;
+
+			return false;
         }
 
     }
