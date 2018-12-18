@@ -21,6 +21,11 @@ namespace SDD
 			return array;
 		}
 
+		public static IEnumerable<char> RangeOfChars(char start, char end)
+		{
+			return Enumerable.Range((int)start, (int)end - (int)start + 1).Select(i => (char)i);
+		}
+
 		public static bool EstOrdonné<T>(this IEnumerable<T> items)
         {
             bool IsOrdered = true;
