@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SDD
@@ -134,6 +135,12 @@ namespace SDD
 						if (CompareHashString(seq, hashString, hashAlgorithm))
 							motDePasse = new string(seq);
 
+						//Thread thread = new Thread(() =>
+						//{
+						//	if (CompareHashString(seq, hashString, hashAlgorithm))
+						//		motDePasse = new string(seq);
+						//});
+						//thread.Start();
 					}
 
 					report?.Invoke(essais, taille);
@@ -152,12 +159,15 @@ namespace SDD
 			return p_motDePasseTrouvé != null;
 		}
 
+		public static object _locker = new object();
 		public static bool CompareHashString(char[] sequenceToHash, string targetHash, HashAlgorithm hashAlogrithm)
 		{
 			byte[] bytes = Encoding.Default.GetBytes(sequenceToHash);
-			string sequenceHashed = BytesToHex(hashAlogrithm.ComputeHash(bytes));
-
-			return sequenceHashed == targetHash;
+			lock(_locker)
+			{
+				string sequenceHashed = BytesToHex(hashAlogrithm.ComputeHash(bytes));
+				return sequenceHashed == targetHash;
+			}
 		}
 	}
 }
