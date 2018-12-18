@@ -24,13 +24,18 @@ namespace AlgoLib
 
 		public Position(string position)
 		{
-			if (position.Length == 2)
+			if (position.Length != 2)
 				throw new ArgumentException();
 
-			if (char.IsLetter(position[0]) && char.IsDigit(position[1]))
+			if (char.IsLetter(position[0]) && position[1].IsHex())
 			{
+				//Il faut traiter les chiffre en hexadecimales
 				Colonne = position[0];
-				Rangée = (int)position[1];
+				Rangée = Convert.ToInt32(position[1].ToString(), 16); //Doit optimiser
+
+				if (Rangée <= 0)
+					throw new ArgumentException();
+
 			}
 			else
 				throw new ArgumentException();
@@ -50,7 +55,7 @@ namespace AlgoLib
 
 		public override bool Equals(object obj)
 		{
-			if (obj is null)
+			if (obj is null || !(obj is Position))
 				return false;
 
 			return Equals((Position)obj);
@@ -58,7 +63,8 @@ namespace AlgoLib
 
 		public override string ToString()
 		{
-			return base.ToString();
+			string hex = Rangée.ToString("X");
+			return Colonne.ToString() + hex;
 		}
 
 		public bool Equals(Position p)
@@ -94,6 +100,16 @@ namespace AlgoLib
 		public static bool operator !=(Position lhs, Position rhs)
 		{
 			return !(lhs == rhs);
+		}
+	}
+
+	public static class Extensions
+	{
+		public static bool IsHex(this char c)
+		{
+			return (c >= '0' && c <= '9') ||
+					 (c >= 'a' && c <= 'f') ||
+					 (c >= 'A' && c <= 'F');
 		}
 	}
 }

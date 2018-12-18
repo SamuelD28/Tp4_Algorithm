@@ -110,7 +110,7 @@ namespace SDD
 			Action<long, int> report = null
 			)
 		{
-			IEnumerable<char> rangeChars = Enumerable.Range((int)premier, (int)dernier - (int)premier + 1).Select(i => (char)i);
+			IEnumerable<char> rangeChars = Enumerable.Range(premier, dernier - premier + 1).Select(i => (char)i);
 			string motDePasse = null;
 			long essaisMax = (p_nbEssaisMax != null) ? (long)p_nbEssaisMax : 1_000_000;
 			long tailleMax = (p_tailleMax != null) ? (long)MaxEssais((int)p_tailleMax, premier, dernier) : 1_000_000;
@@ -134,13 +134,6 @@ namespace SDD
 
 						if (CompareHashString(seq, hashString, hashAlgorithm))
 							motDePasse = new string(seq);
-
-						//Thread thread = new Thread(() =>
-						//{
-						//	if (CompareHashString(seq, hashString, hashAlgorithm))
-						//		motDePasse = new string(seq);
-						//});
-						//thread.Start();
 					}
 
 					report?.Invoke(essais, taille);
