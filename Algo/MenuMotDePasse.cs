@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using static System.Console;
 using static System.ConsoleColor;
@@ -20,7 +21,7 @@ namespace SDD
         }
 
         static readonly string[] HashAlgorithms = new string[] {
-            nameof(Md5), nameof(Sha1), nameof(Sha256), nameof(Sha384), nameof(Sha512)
+            nameof(MD5), nameof(SHA1), nameof(SHA256), nameof(SHA384), nameof(SHA512)
         };
 
         static readonly List<MenuItem> MenuItems = new List<MenuItem>

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
@@ -10,22 +11,23 @@ namespace SDD
 {
 	public static class MotDePasse
 	{
-		public static readonly MD5 Md5 = MD5.Create();
-		public static readonly SHA1 Sha1 = SHA1.Create();
-		public static readonly SHA256 Sha256 = SHA256.Create();
-		public static readonly SHA384 Sha384 = SHA384.Create();
-		public static readonly SHA512 Sha512 = SHA512.Create();
-		public static readonly HashAlgorithm[] HashAlgorithms = new HashAlgorithm[] { Md5, Sha1, Sha256, Sha384, Sha512 };
+		public static Dictionary<int, KeyValuePair<int, string>> HashAlgorithms = new Dictionary<int, KeyValuePair<int, string>>() {
+			{ 0,new KeyValuePair<int, string>(16, "md5")},
+			{ 1,new KeyValuePair<int, string>(128, "sha1")},
+			{ 2,new KeyValuePair<int, string>(256, "sha256")},
+			{ 3,new KeyValuePair<int, string>(384, "sha384")},
+			{ 4,new KeyValuePair<int, string>(512, "sha512")},
+		};
 
 		public static HashAlgorithm GetHashAlgo(int byteSize)
 		{
 			switch (byteSize)
 			{
-				case 16: return Md5;
-				case 128: return Sha1;
-				case 256: return Sha256;
-				case 384: return Sha384;
-				case 512: return Sha512;
+				case 16: return MD5.Create();
+				case 128: return SHA1.Create();
+				case 256: return SHA256.Create();
+				case 384: return SHA384.Create();
+				case 512: return SHA512.Create();
 				default: return null;
 			}
 		}
@@ -34,11 +36,11 @@ namespace SDD
 		{
 			switch (name.ToLower())
 			{
-				case "md5": return Md5;
-				case "sha1": return Sha1;
-				case "sha256": return Sha256;
-				case "sha384": return Sha384;
-				case "sha512": return Sha512;
+				case "md5": return MD5.Create();
+				case "sha1": return SHA1.Create();
+				case "sha256": return SHA256.Create();
+				case "sha384": return SHA384.Create();
+				case "sha512": return SHA512.Create();
 				default: return null;
 			}
 		}
@@ -110,57 +112,63 @@ namespace SDD
 			Action<long, int> report = null
 			)
 		{
-			IEnumerable<char> rangeChars = Enumerable.Range(premier, dernier - premier + 1).Select(i => (char)i);
-			string motDePasse = null;
+			char[] rangeChars = Enumerable.Range(premier, dernier - premier + 1).Select(i => (char)i).ToArray();
 			long essaisMax = (p_nbEssaisMax != null) ? (long)p_nbEssaisMax : 1_000_000;
 			long tailleMax = (p_tailleMax != null) ? (long)MaxEssais((int)p_tailleMax, premier, dernier) : 1_000_000;
 
-			int taille = 1;
-			long essais = 0;
-
+			string motDePasse = null;
 			bool limiteAtteinte = false;
+			int taille = 1;
+
+			long[] essais = new long[HashAlgorithms.Count()];
 			for (; ; taille++)
 			{
-				Permutation.ForAllCombinations(rangeChars.ToArray(), taille, seq =>
+				var tokenSource = new CancellationTokenSource();
+				ConcurrentBag<Task> tasks = new ConcurrentBag<Task>();
+				foreach (var hashAlgorithm in HashAlgorithms)
 				{
-					essais++;
-					foreach (HashAlgorithm hashAlgorithm in HashAlgorithms)
+					HashAlgorithm hash = GetHashAlgo(hashAlgorithm.Value.Key);
+					int numeroThread = hashAlgorithm.Key;
+					Task t = Task.Factory.StartNew(() =>
 					{
-						if (essais >= essaisMax || essais >= tailleMax)
+						Permutation.ForAllCombinations(rangeChars, taille, seq =>
 						{
-							limiteAtteinte = true;
-							break;
-						}
+							essais[numeroThread]++;
 
-						if (CompareHashString(seq, hashString, hashAlgorithm))
-							motDePasse = new string(seq);
-					}
+							if (essais[numeroThread] >= essaisMax || essais[numeroThread] >= tailleMax)
+								tokenSource.Cancel();
+							else if (CompareHashString(seq, hashString, hash))
+							{
+								motDePasse = new string(seq);
+								tokenSource.Cancel();
+							}
+							report?.Invoke(essais[numeroThread], taille);
 
-					report?.Invoke(essais, taille);
-					return limiteAtteinte;
-				});
+							return tokenSource.IsCancellationRequested;
+						});
+					}, tokenSource.Token);
+					tasks.Add(t);
+				}
+				Task.WaitAll(tasks.ToArray());
 
-				/***/
 				if (motDePasse != null || limiteAtteinte) break;
-				/***/
 			}
 
 			p_tailleDernierEssai = taille;
-			p_nbEssaisEffectués = essais;
+			p_nbEssaisEffectués = essais.Sum();
 			p_motDePasseTrouvé = motDePasse;
 
 			return p_motDePasseTrouvé != null;
 		}
 
+
+
 		public static object _locker = new object();
 		public static bool CompareHashString(char[] sequenceToHash, string targetHash, HashAlgorithm hashAlogrithm)
 		{
 			byte[] bytes = Encoding.Default.GetBytes(sequenceToHash);
-			lock(_locker)
-			{
-				string sequenceHashed = BytesToHex(hashAlogrithm.ComputeHash(bytes));
-				return sequenceHashed == targetHash;
-			}
+			string sequenceHashed = BytesToHex(hashAlogrithm.ComputeHash(bytes));
+			return sequenceHashed == targetHash;
 		}
 	}
 }
